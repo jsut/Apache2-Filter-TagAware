@@ -56,15 +56,15 @@ our $VERSION = '0.02';
 
 =head1 DESCRIPTION
 
-Apache2::Filter::TagAware is an subclass of Apache2::Filter which 
-ensures that the read method will not return a split tag, where what 
-constitutes a split tag is definable by the filter.
+Apache2::Filter::TagAware is a subclass of C<Apache2::Filter> which 
+ensures that the read method will not return a split tag. What constitutes 
+a split tag is definable by the filter.
 
 =head2 new
 
   $f = Apache2::Filter::TagAware->new($f,%args);
 
-=item * tag_regexp
+=item tag_regexp
 
 a regular expression which defines a split tag.  defaults to '(<[^>]*)$'
 
@@ -83,15 +83,15 @@ sub new {
 
   $f->read($buffer, $bytes)
 
-whenever you call read, $bytes are read from the underlying stream, but
-that number of bytes may or may not be returned from the call, depending on
-the size of the tag that might be open.  It may return 0 bytes for a few calls
-then return a chunk of the steam 3 times the size of what you were asking for
-on the next.  There's not really anything that can be done about this other 
-than to use a buffer size that's "big enough", whatever that means in your
-context.  Obviously, returning 0 from read would basically break the page
-whenever you ran into a tag that was larger than your buffer, so in that
-situation read will return '0e0', aka zero but true to alleviate the problem.
+When read is called, $bytes are read from the underlying stream. The number of
+bytes returned from the call will vary depending on the size of any tag that 
+might be open. It may return 0 bytes for a few calls then return a chunk of 
+the stream 3 times the size of what you were asking for on the next. There's 
+not really anything that can be done about this other than to use a buffer 
+size that's "big enough", whatever that means in your context.  Obviously, 
+returning 0 from read would basically break the page whenever you ran into a 
+tag that was larger than your buffer, so in that situation read will return 
+'0e0', aka zero but true to alleviate the problem.
 
 =cut
 
@@ -117,17 +117,13 @@ sub read {
     $context ||= $self->SUPER::ctx;
     my $tag_regexp = $context->{'tag_regexp'} || '(<[^>]*)$';
     #
-    # now finally, lets read through the parent class
-    # ask make sure it's impossible for us to return
-    # more bytes that was originally asked for by
-    # reducing $bytes by the length of the extra in our
-    # context
+    # originally, i was trying to not return more than $bytes, but if there
+    # is a tag larger than the buffer, that won't work, so now we just read
+    # $bytes no matter what.
     #
     #my $ret_val = $self->SUPER::read($buffer, $bytes - length($context->{extra} || ''));
     my $ret_val = $self->SUPER::read($buffer, $bytes);
-    
     $log->info('got buffer: '. $buffer);
-
     #
     # if there is something extra in our context, prepend
     # it to what we just read
@@ -142,12 +138,11 @@ sub read {
         $buffer = substr($buffer, 0, - length($context->{extra}));
     }
     $log->info('trimmed buffer: '. $buffer);
-
     $log->info('e: ' . length($context->{extra}));
     $log->info('b: ' . length($buffer));
 
     if (length($context->{extra}) >= $bytes ) {
-        $r->warn(qq[!!!this page has a tag that is larger than $bytes.]);
+        $r->warn($r->uri . qq[ has a tag that is larger than $bytes.]);
     }
 
     if ($self->seen_eos) {
@@ -231,7 +226,4 @@ be split.
 Copyright 2007, Adam Prime (adam.prime@utoronto.ca) 
 
 This software is free. It is licensed under the same terms as Perl itself.
-
-
-
 

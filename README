@@ -5,11 +5,15 @@ VERSION
     version 0.02
 
 SYNOPSIS
-    package Your::FancyFilter;
+      package Your::FancyFilter;
 
-    use strict; use warnings; use Apache2::Filter::TagAware qw(); use
-    Apache2::RequestRec qw(); use Apache2::Log qw(); use APR::Table qw();
-    use Apache2::Const -compile => qw(OK DECLINED);
+      use strict;
+      use warnings;
+      use Apache2::Filter::TagAware qw();
+      use Apache2::RequestRec qw();
+      use Apache2::Log qw();
+      use APR::Table qw();
+      use Apache2::Const -compile => qw(OK DECLINED);
 
       sub handler {
           my $f = Apache2::Filter::TagAware->new(shift);
@@ -35,29 +39,29 @@ SYNOPSIS
       1;
 
 DESCRIPTION
-    Apache2::Filter::TagAware is an subclass of Apache2::Filter which
-    ensures that the read method will not return a split tag, where what
+    Apache2::Filter::TagAware is a subclass of "Apache2::Filter" which
+    ensures that the read method will not return a split tag. What
     constitutes a split tag is definable by the filter.
 
   new
       $f = Apache2::Filter::TagAware->new($f,%args);
 
-    * tag_regexp
+    tag_regexp
     a regular expression which defines a split tag. defaults to '(<[^>]*)$'
 
   read
       $f->read($buffer, $bytes)
 
-    whenever you call read, $bytes are read from the underlying stream, but
-    that number of bytes may or may not be returned from the call, depending
-    on the size of the tag that might be open. It may return 0 bytes for a
-    few calls then return a chunk of the steam 3 times the size of what you
-    were asking for on the next. There's not really anything that can be
-    done about this other than to use a buffer size that's "big enough",
-    whatever that means in your context. Obviously, returning 0 from read
-    would basically break the page whenever you ran into a tag that was
-    larger than your buffer, so in that situation read will return '0e0',
-    aka zero but true to alleviate the problem.
+    When read is called, $bytes are read from the underlying stream. The
+    number of bytes returned from the call will vary depending on the size
+    of any tag that might be open. It may return 0 bytes for a few calls
+    then return a chunk of the stream 3 times the size of what you were
+    asking for on the next. There's not really anything that can be done
+    about this other than to use a buffer size that's "big enough", whatever
+    that means in your context. Obviously, returning 0 from read would
+    basically break the page whenever you ran into a tag that was larger
+    than your buffer, so in that situation read will return '0e0', aka zero
+    but true to alleviate the problem.
 
   ctx
     See Apache2::Filter docs, behaves identically, at least on the surface.

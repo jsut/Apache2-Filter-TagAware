@@ -15,7 +15,7 @@ Apache2::Filter::TagAware - Tag Awareness for Apache2::Filter
 
 version 0.02
 
-=cut 
+=cut
 
 our $VERSION = '0.02';
 
@@ -56,19 +56,23 @@ our $VERSION = '0.02';
 
 =head1 DESCRIPTION
 
-Apache2::Filter::TagAware is a subclass of C<Apache2::Filter> which 
-ensures that the read method will not return a split tag. What constitutes 
+Apache2::Filter::TagAware is a subclass of C<Apache2::Filter> which
+ensures that the read method will not return a split tag. What constitutes
 a split tag is definable by the filter.
 
 =head2 new
 
   $f = Apache2::Filter::TagAware->new($f,%args);
 
+=over 4
+
 =item tag_regexp
 
 a regular expression which defines a split tag.  defaults to '(<[^>]*)$'
 
-=cut 
+=back
+
+=cut
 
 sub new {
     my ($class,$f,%args) = @_;
@@ -84,13 +88,13 @@ sub new {
   $f->read($buffer, $bytes)
 
 When read is called, $bytes are read from the underlying stream. The number of
-bytes returned from the call will vary depending on the size of any tag that 
-might be open. It may return 0 bytes for a few calls then return a chunk of 
-the stream 3 times the size of what you were asking for on the next. There's 
-not really anything that can be done about this other than to use a buffer 
-size that's "big enough", whatever that means in your context.  Obviously, 
-returning 0 from read would basically break the page whenever you ran into a 
-tag that was larger than your buffer, so in that situation read will return 
+bytes returned from the call will vary depending on the size of any tag that
+might be open. It may return 0 bytes for a few calls then return a chunk of
+the stream 3 times the size of what you were asking for on the next. There's
+not really anything that can be done about this other than to use a buffer
+size that's "big enough", whatever that means in your context.  Obviously,
+returning 0 from read would basically break the page whenever you ran into a
+tag that was larger than your buffer, so in that situation read will return
 '0e0', aka zero but true to alleviate the problem.
 
 =cut
@@ -147,14 +151,14 @@ sub read {
 
     if ($self->seen_eos) {
         # we've seen the end of the data stream
-        # pass back the extra data too, because 
-	# we shouldn't get called again
-	$log->info('seen eos');
-	if ($context->{extra}) {
+        # pass back the extra data too, because
+        # we shouldn't get called again
+        $log->info('seen eos');
+        if ($context->{extra}) {
             $buffer .= $context->{extra};
-	    $context->{extra} = undef;
-	}
-	$log->info('se buffer post:'. $buffer);
+            $context->{extra} = undef;
+        }
+        $log->info('se buffer post:'. $buffer);
     }
     else {
         # there's more data to come
@@ -172,7 +176,7 @@ sub read {
     my $length = length ($buffer);
     if (!$self->seen_eos && !$length){
         $length = '0e0';
-	$log->info('returning 0 but true');
+        $log->info('returning 0 but true');
     }
     return $length;
 }
@@ -181,12 +185,12 @@ sub read {
 
 See Apache2::Filter docs, behaves identically, at least on the surface.
 
-=cut 
+=cut
 
 #
 # ctx is overridden as well because we need to use it too.
 # If they are passing in something to store in the context
-# i'm just sticking 
+# i'm just sticking
 #
 sub ctx {
     my ($self, $args) = @_;
@@ -208,7 +212,7 @@ sub ctx {
     # of the actual context, if it doesn't have a value, explicitly return
     # undef
     #
-    return $real_ctx->{theirs} || undef; 
+    return $real_ctx->{theirs} || undef;
 }
 
 1;
@@ -216,14 +220,14 @@ sub ctx {
 =head1 CAVEATS
 
 the $bytes you pass in to read is used as a guideline for the maximum number
-of bytes that read will return, but it will not always be less than $bytes. 
+of bytes that read will return, but it will not always be less than $bytes.
 If there is a tag in your document larger than $bytes you'll eventually get
 a chunk of page returned that's larger than $bytes, since that tag will not
 be split.
 
 =head1 AUTHOR AND COPYRIGHT
 
-Copyright 2007, Adam Prime (adam.prime@utoronto.ca) 
+Copyright 2007, Adam Prime (adam.prime@utoronto.ca)
 
 This software is free. It is licensed under the same terms as Perl itself.
 

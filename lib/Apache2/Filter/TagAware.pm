@@ -106,46 +106,43 @@ sub read {
     #
     # $context is used to store state
     #
-    my $context;
+    my $context = $self->SUPER::ctx();
     #
     # if there is no context yet, set up
     # our default context
     #
-    unless ($self->SUPER::ctx) {
+    if (!$context) {
         $context = { extra => undef, };
     }
-    #
-    # if there is already a context stash it in
-    # $context
-    #
-    $context ||= $self->SUPER::ctx;
+
     my $tag_regexp = $context->{'tag_regexp'} || '(<[^>]*)$';
     #
     # originally, i was trying to not return more than $bytes, but if there
     # is a tag larger than the buffer, that won't work, so now we just read
     # $bytes no matter what.
     #
-    #my $ret_val = $self->SUPER::read($buffer, $bytes - length($context->{extra} || ''));
     my $ret_val = $self->SUPER::read($buffer, $bytes);
-    $log->info('got buffer: '. $buffer);
+    $buffer ||= '';
+    $log->info('read buffer: '. $buffer ? $buffer : '');
     #
     # if there is something extra in our context, prepend
     # it to what we just read
     #
-    $buffer = $context->{extra} . $buffer if $context->{extra};
-    $log->info('extra buffer: '. $buffer);
+    if ($context->{extra}) {
+        $buffer = $context->{extra} . $buffer;
+        $log->info('prepended extra buffer: '. $buffer);
+    }
     #
     # if our buffer ends in a split tag ('<strong' eg)
     # save processing the tag for later
     #
     if (($context->{extra}) = $buffer =~ m/$tag_regexp/) {
         $buffer = substr($buffer, 0, - length($context->{extra}));
+        $log->info('trimmed buffer: '. $buffer);
+        $log->info('trimmed: ' . length($context->{extra}));
     }
-    $log->info('trimmed buffer: '. $buffer);
-    $log->info('e: ' . length($context->{extra}));
-    $log->info('b: ' . length($buffer));
 
-    if (length($context->{extra}) >= $bytes ) {
+    if ($context->{extra} && length($context->{extra}) >= $bytes ) {
         $r->warn($r->uri . qq[ has a tag that is larger than $bytes.]);
     }
 
@@ -174,7 +171,7 @@ sub read {
     $log->info('sending back buffer: '. $buffer);
     $_[1] = $buffer;
     my $length = length ($buffer);
-    if (!$self->seen_eos && !$length){
+    if (!$self->seen_eos && !$length && $context->{extra}){
         $length = '0e0';
         $log->info('returning 0 but true');
     }

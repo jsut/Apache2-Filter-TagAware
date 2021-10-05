@@ -13,11 +13,11 @@ Apache2::Filter::TagAware - Tag Awareness for Apache2::Filter
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
